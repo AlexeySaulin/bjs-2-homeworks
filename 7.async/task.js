@@ -4,57 +4,56 @@ class AlarmClock {
         this.timerId = null
     }
     addClock(time, callback, id) {
-        if ( id === undefined) {
+        if (!id) {
             throw new Error("Параметр id не передан");
         }
-        if (this.alarmCollection.find(alarm => alarm.id === id) !== undefined) {
-            return console.error("Такой будильник уже существует");
+        if (this.alarmCollection.some(alarm => alarm.id === id)) {
+           return console.error("Такой будильник уже существует");
         }
-        return this.alarmCollection.push({id, time, callback});
+         this.alarmCollection.push({id, time, callback});
     }
     removeClock (id) {
         let inputArrLength = this.alarmCollection.length;
-        this.alarmCollection = this.alarmCollection.filter(clock => clock.id !== id);
+        this.alarmCollection = this.alarmCollection.filter(alarm => alarm.id !== id);
         let outputArrLength = this.alarmCollection.length;
         return outputArrLength < inputArrLength;
     }
 
 	getCurrentFormattedTime() {
-        let actualTime = new Date();
-        let minutes = actualTime.getMinutes();
-        let hours = actualTime.getHours();
-        return hours + ':' + minutes;
+        return new Date().toLocaleTimeString("ru-Ru", {
+			hour: "2-digit",
+			minute: "2-digit",
+		});
 	}
 
 	start() {
-		function checkClock(alarm) {
+		let checkClock = (alarm) => {
             let alarmTime = this.getCurrentFormattedTime();
             if (alarm.time === alarmTime) {
-                return alarm.callback();
+             alarm.callback();
             }
         }
-        if (this.timerId === null) {
+        if (!this.timerId) {
             this.timerId = setInterval(() => {
                 this.alarmCollection.forEach(alarm => checkClock(alarm));
             }, 1000);
         }
-        return;
 	}
 
 	stop() {
-		if (this.timerId !== null) {
+		if (!this.timerId) {
             clearInterval(this.timerId);
-            return this.timerId = null;
+            this.timerId = null;
         }
 	}
 
 	printAlarms() {
-		return this.alarmCollection.forEach(alarm => console.log(alarm.id + ":" + alarm.time));
+	     this.alarmCollection.forEach(alarm => console.log(alarm.id + ":" + alarm.time));
 	}
 
 	clearAlarms() {
 		this.stop();
-		return this.alarmCollection = [];
+		this.alarmCollection = [];
 	}
 
 }
